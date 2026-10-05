@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>krimo coin | Web Miner v3.0</title>
+<title>krimo coin | Web Miner v4.0</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -11,7 +11,7 @@
     --border: #2d3948; --text: #e6edf3; --muted: #8b98a5;
     --accent: #ff6b35; --accent-2: #ff9f43;
     --success: #2ecc71; --danger: #e74c3c; --info: #3498db;
-    --purple: #9b59b6;
+    --purple: #9b59b6; --gold: #f1c40f;
   }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, sans-serif;
@@ -28,11 +28,13 @@
   @media (max-width: 900px) { .grid-3 { grid-template-columns: 1fr; } }
   @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
   .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-  .panel h2 { font-size: 1rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .panel h2 { font-size: 1rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+  .panel h2 .h2-left { display: flex; align-items: center; gap: 8px; }
   .field { margin-bottom: 14px; }
   .field label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; }
   .field input, .field select { width: 100%; padding: 11px 14px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 0.95rem; outline: none; transition: border-color 0.2s; direction: ltr; text-align: left; }
   .field input:focus, .field select:focus { border-color: var(--accent); }
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform 0.1s, opacity 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .btn:active { transform: scale(0.98); }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -40,53 +42,96 @@
   .btn-stop { background: var(--danger); color: white; }
   .btn-send { background: linear-gradient(135deg, var(--purple), var(--info)); color: white; margin-top: 10px; }
   .btn-copy { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); margin-top: 8px; }
+  .btn-mini { padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; background: var(--panel-2); border: 1px solid var(--border); color: var(--text); transition: all 0.2s; }
+  .btn-mini:hover { border-color: var(--accent); }
+  .btn-mini.active { background: var(--accent); border-color: var(--accent); color: white; }
   .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-  .stat { background: var(--panel-2); border-radius: 8px; padding: 14px; text-align: center; }
-  .stat .value { font-size: 1.4rem; font-weight: bold; color: var(--accent-2); font-variant-numeric: tabular-nums; }
-  .stat .label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; margin-top: 4px; }
+  .stat { background: var(--panel-2); border-radius: 8px; padding: 14px; text-align: center; position: relative; }
+  .stat .value { font-size: 1.3rem; font-weight: bold; color: var(--accent-2); font-variant-numeric: tabular-nums; word-break: break-all; }
+  .stat .label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; margin-top: 4px; display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; }
   .stat .value.good { color: var(--success); }
   .stat .value.bad { color: var(--danger); }
   .stat .value.info { color: var(--info); }
   .stat .value.purple { color: var(--purple); }
+  .stat .value.gold { color: var(--gold); }
+  .fiat-badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    background: rgba(46, 204, 113, 0.15);
+    color: var(--success);
+    border: 1px solid rgba(46, 204, 113, 0.3);
+    direction: ltr;
+    letter-spacing: 0.2px;
+  }
   .worker-bar { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
   .worker-bar > div { height: 100%; background: linear-gradient(90deg, var(--success), var(--accent-2)); width: 0%; transition: width 0.4s; }
+  .auto-bar > div { background: linear-gradient(90deg, var(--info), var(--purple), var(--gold)); }
   #log { background: #0a0e13; border-radius: 8px; padding: 12px; height: 180px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 0.78rem; direction: ltr; text-align: left; line-height: 1.5; }
   #log div { margin-bottom: 2px; }
-  #log .t { color: var(--muted); } #log .ok { color: var(--success); } #log .err { color: var(--danger); } #log .info { color: var(--info); } #log .warn { color: #f39c12; }
+  #log .t { color: var(--muted); } #log .ok { color: var(--success); } #log .err { color: var(--danger); } #log .info { color: var(--info); } #log .warn { color: #f39c12; } #log .gold { color: var(--gold); font-weight: bold; }
   .status { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; background: var(--panel-2); margin-bottom: 16px; }
   .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); }
   .dot.on { background: var(--success); box-shadow: 0 0 8px var(--success); animation: pulse 1.5s infinite; }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
   .note { font-size: 0.78rem; color: var(--muted); margin-top: 8px; line-height: 1.5; }
   .note a { color: var(--accent-2); }
-  .coin-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; background: var(--accent); color: white; margin-inline-start: 6px; }
   .pool-info { font-size: 0.8rem; color: var(--muted); margin-top: 10px; }
   .pool-info span { color: var(--accent-2); font-weight: 600; }
   .divider { height: 1px; background: var(--border); margin: 14px 0; }
   footer { text-align: center; color: var(--muted); font-size: 0.8rem; padding: 24px 0; }
+
+  /* Auto-send toggle */
+  .switch { position: relative; display: inline-block; width: 46px; height: 24px; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: var(--border); transition: .3s; border-radius: 24px; }
+  .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; transition: .3s; border-radius: 50%; }
+  .switch input:checked + .slider { background: var(--success); }
+  .switch input:checked + .slider:before { transform: translateX(22px); }
+
+  /* Toast */
+  .toast-container { position: fixed; top: 20px; left: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+  .toast { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); animation: slideIn 0.3s ease; min-width: 280px; border-left: 4px solid var(--success); }
+  .toast.warn { border-left-color: #f39c12; }
+  .toast.error { border-left-color: var(--danger); }
+  .toast.info { border-left-color: var(--info); }
+  .toast.gold { border-left-color: var(--gold); background: linear-gradient(135deg, rgba(241,196,15,0.15), var(--panel)); }
+  .toast-title { font-weight: 700; margin-bottom: 4px; font-size: 0.9rem; }
+  .toast-msg { font-size: 0.82rem; color: var(--muted); }
+  @keyframes slideIn { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  .price-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 20px; font-size: 0.75rem; color: var(--muted); }
+  .price-badge b { color: var(--success); }
 </style>
 </head>
 <body>
+
+<div class="toast-container" id="toasts"></div>
+
 <div class="container">
   <header>
-    <h1>
-      <span>⛏️ <span class="duco">krimo coin</span> Web Miner</span>
-    </h1>
-    <p>v3.0 — SoloFury API • محفظة • إرسال • 5000+ H/s</p>
+    <h1><span>⛏️ <span class="duco">krimo coin</span> Web Miner</span></h1>
+    <p>v4.0 — أسعار حقيقية • إرسال تلقائي • 5000+ H/s</p>
   </header>
 
   <div class="status">
     <div class="dot" id="statusDot"></div>
     <span id="statusText">متوقف</span>
     <span style="margin-inline-start:auto;color:var(--muted);font-size:0.8rem;">
-      مدة التشغيل: <span id="uptime" style="direction:ltr;display:inline-block;">00:00:00</span>
+      العملة: <select id="currencyToggle" style="background:transparent;border:none;color:var(--accent-2);font-weight:bold;cursor:pointer;font-size:0.85rem;">
+        <option value="EUR" selected>EUR €</option>
+        <option value="USD">USD $</option>
+      </select>
+      • مدة التشغيل: <span id="uptime" style="direction:ltr;display:inline-block;">00:00:00</span>
     </span>
   </div>
 
-  <!-- ===== صف الإعدادات ===== -->
+  <!-- ===== إعدادات + Pool ===== -->
   <div class="grid">
     <div class="panel">
-      <h2>⚙️ إعدادات التعدين</h2>
+      <h2><span class="h2-left">⚙️ إعدادات التعدين</span></h2>
       <div class="field">
         <label>العملة (Coin)</label>
         <select id="coinSelect">
@@ -102,7 +147,7 @@
         <input type="text" id="walletAddr" placeholder="bc1q..." spellcheck="false">
       </div>
       <div class="field">
-        <label>اسم العامل (Worker Name)</label>
+        <label>اسم العامل</label>
         <input type="text" id="workerName" value="krimo-rig-01" spellcheck="false">
       </div>
       <div class="field">
@@ -113,7 +158,7 @@
     </div>
 
     <div class="panel">
-      <h2>📊 إحصائيات المجمع (حقيقية من API)</h2>
+      <h2><span class="h2-left">📊 إحصائيات المجمع (API)</span></h2>
       <div class="stats-grid">
         <div class="stat">
           <div class="value" id="poolHash">—</div>
@@ -133,61 +178,64 @@
         </div>
       </div>
       <div class="pool-info" id="poolStatus">جارٍ جلب البيانات...</div>
+      <div class="divider"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <span class="price-badge">💰 سعر <b id="priceCoinName">BCH</b>:</span>
+        <span class="price-badge"><b id="priceCoin">—</b> USD • <b id="priceCoinEur">—</b> EUR</span>
+        <span style="font-size:0.7rem;color:var(--muted);" id="priceUpdate">—</span>
+      </div>
     </div>
   </div>
 
-  <!-- ===== صف المحفظة والإرسال ===== -->
+  <!-- ===== محفظة + إرسال يدوي ===== -->
   <div class="grid">
     <div class="panel">
-      <h2>💼 محفظة krimo coin (عنوان الاستلام)</h2>
+      <h2><span class="h2-left">💼 محفظة krimo coin</span></h2>
       <div class="field">
-        <label>عنوان المحفظة المُستخدَم حاليًا</label>
+        <label>العنوان الحالي</label>
         <input type="text" id="currentWalletDisplay" readonly placeholder="لم يتم الإدخال بعد" style="cursor:pointer" onclick="copyCurrentWallet()">
       </div>
       <div class="stats-grid">
         <div class="stat">
           <div class="value purple" id="pendingBalance">0.00000000</div>
-          <div class="label">الرصيد المعلّق (محاكاة)</div>
+          <div class="label">الرصيد المعلّق</div>
         </div>
         <div class="stat">
           <div class="value good" id="totalEarned">0.00000000</div>
-          <div class="label">إجمالي الأرباح (محاكاة)</div>
+          <div class="label">إجمالي الأرباح</div>
         </div>
       </div>
       <button class="btn btn-copy" onclick="copyCurrentWallet()">📋 نسخ عنواني</button>
     </div>
 
     <div class="panel">
-      <h2>📤 إرسال إلى المحفظة</h2>
+      <h2><span class="h2-left">📤 إرسال يدوي</span></h2>
       <div class="field">
-        <label>العملة المرسلة</label>
+        <label>العملة</label>
         <select id="sendCoin">
-          <option value="btc">BTC — Bitcoin</option>
-          <option value="bch" selected>BCH — Bitcoin Cash</option>
-          <option value="bc2">BC2 — Bitcoin II</option>
-          <option value="bch2">BCH2 — Bitcoin Cash II</option>
-          <option value="xec">XEC — eCash</option>
+          <option value="btc">BTC</option>
+          <option value="bch" selected>BCH</option>
+          <option value="bc2">BC2</option>
+          <option value="bch2">BCH2</option>
+          <option value="xec">XEC</option>
         </select>
       </div>
       <div class="field">
         <label>عنوان المستلم</label>
-        <input type="text" id="sendTo" placeholder="أدخل عنوان المحفظة المستلمة" spellcheck="false">
+        <input type="text" id="sendTo" placeholder="عنوان المحفظة المستلمة" spellcheck="false">
       </div>
       <div class="field">
         <label>المبلغ</label>
         <input type="number" id="sendAmount" placeholder="0.00000000" step="0.00000001" min="0">
       </div>
       <button class="btn btn-send" onclick="openSendDialog()">📤 إرسال الآن</button>
-      <p class="note">
-        سيتم فتح محفظتك الخارجية (Trust Wallet / Electrum / MetaMask) مع تعبئة البيانات مسبقًا. <b>SoloFury غير احتجازي</b> — المكافآت تُدفع مباشرة على شبكة البلوكتشين.
-      </p>
     </div>
   </div>
 
-  <!-- ===== صف الإحصائيات ===== -->
-  <div class="grid-3">
+  <!-- ===== أرباح + إرسال تلقائي ===== -->
+  <div class="grid">
     <div class="panel">
-      <h2>⛏️ إحصائيات التعدين (محاكاة محسّنة)</h2>
+      <h2><span class="h2-left">⛏️ أرباح الجلسة</span></h2>
       <div class="stats-grid">
         <div class="stat">
           <div class="value" id="myHashrate">5000 H/s</div>
@@ -197,82 +245,140 @@
           <div class="value good" id="accepted">0</div>
           <div class="label">حصة مقبولة</div>
         </div>
+        <div class="stat" style="grid-column: span 2;">
+          <div class="value gold" id="earned">0.00000000</div>
+          <div class="label">
+            أرباح الجلسة
+            <span class="fiat-badge" id="earnedFiat">≈ 0.00 €</span>
+            <span class="fiat-badge" id="earnedUsd" style="background:rgba(52,152,219,0.15);color:var(--info);border-color:rgba(52,152,219,0.3);">≈ $0.00</span>
+          </div>
+        </div>
         <div class="stat">
           <div class="value bad" id="rejected">0</div>
           <div class="label">حصة مرفوضة</div>
         </div>
         <div class="stat">
-          <div class="value" id="earned">0.00000000</div>
-          <div class="label">أرباح الجلسة</div>
+          <div class="value" id="successRate">100%</div>
+          <div class="label">نسبة النجاح</div>
         </div>
       </div>
       <div style="margin-top:14px;">
-        <div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--muted);margin-bottom:6px;">
-          <span>نسبة النجاح</span>
-          <span id="successRate">100%</span>
-        </div>
         <div class="worker-bar"><div id="successBar" style="width:100%"></div></div>
       </div>
     </div>
 
-    <div class="panel">
-      <h2>📡 بيانات الشبكة (حقيقية)</h2>
-      <div class="stats-grid">
-        <div class="stat">
-          <div class="value" id="netBlocks">—</div>
-          <div class="label">ارتفاع الكتلة</div>
-        </div>
-        <div class="stat">
-          <div class="value info" id="netHash">—</div>
-          <div class="label">هاش ريت الشبكة</div>
-        </div>
-        <div class="stat">
-          <div class="value" id="poolFee">—</div>
-          <div class="label">رسوم المجمع</div>
-        </div>
-        <div class="stat">
-          <div class="value good" id="poolUptime">—</div>
-          <div class="label">مدة التشغيل</div>
+    <!-- الإرسال التلقائي -->
+    <div class="panel" style="border-color: rgba(241,196,15,0.4);">
+      <h2>
+        <span class="h2-left">🤖 الإرسال التلقائي</span>
+        <label class="switch">
+          <input type="checkbox" id="autoSendToggle">
+          <span class="slider"></span>
+        </label>
+      </h2>
+      <div class="field">
+        <label>العتبة (القيمة بالعملة المختارة)</label>
+        <div class="row-2">
+          <input type="number" id="autoSendThreshold" value="5" min="0.1" step="0.5">
+          <select id="autoSendCurrency">
+            <option value="EUR" selected>EUR €</option>
+            <option value="USD">USD $</option>
+          </select>
         </div>
       </div>
-    </div>
+      <div class="field">
+        <label>إرسال إلى</label>
+        <input type="text" id="autoSendTo" placeholder="عنوان محفظتك (افتراضي: عنوانك الحالي)" spellcheck="false">
+      </div>
 
-    <div class="panel">
-      <h2>🔗 معلومات التعدين</h2>
-      <div class="field">
-        <label>Stratum URL (للتعدين الحقيقي)</label>
-        <input type="text" id="stratumUrl" readonly value="stratum+tcp://bch.solofury.com:7070" style="cursor:pointer" onclick="this.select()">
+      <div style="margin-top:8px;">
+        <div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--muted);margin-bottom:6px;">
+          <span>التقدم نحو العتبة</span>
+          <span id="autoSendProgressLabel" style="direction:ltr;">0%</span>
+        </div>
+        <div class="worker-bar auto-bar"><div id="autoSendBar" style="width:0%"></div></div>
+        <div style="text-align:center;font-size:0.8rem;color:var(--muted);margin-top:8px;">
+          القيمة الحالية: <b id="autoSendCurrent" style="color:var(--gold);">0.00 €</b>
+          / <b id="autoSendTarget" style="color:var(--accent-2);">5.00 €</b>
+        </div>
       </div>
-      <div class="field">
-        <label>منافذ بديلة (Failover)</label>
-        <input type="text" id="stratumFailover" readonly value=":7071 • :7072" style="cursor:pointer" onclick="this.select()">
-      </div>
+
       <div class="divider"></div>
-      <p class="note" style="margin-top:0;">
-        💡 <b>للتعدين الحقيقي</b>: استخدم miners مثل <code>cgminer</code> أو <code>Antminer</code> مع عنوان محفظتك كـ username. المجمع يدفع 99% مباشرة على شبكة البلوكتشين.
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <span class="price-badge">✅ مرات الإرسال: <b id="autoSendCount">0</b></span>
+        <span class="price-badge">⏰ آخر إرسال: <b id="autoSendLast">—</b></span>
+      </div>
+      <p class="note">
+        عند وصول أرباح الجلسة إلى العتبة، سيتم فتح محفظتك الخارجية تلقائيًا مع تعبئة العنوان والمبلغ. <b>لن يتم إرسال أي معاملة دون موافقتك في المحفظة</b>.
       </p>
     </div>
   </div>
 
+  <!-- ===== بيانات الشبكة ===== -->
+  <div class="grid-3">
+    <div class="panel">
+      <h2><span class="h2-left">📡 بيانات الشبكة (API)</span></h2>
+      <div class="stats-grid">
+        <div class="stat"><div class="value" id="netBlocks">—</div><div class="label">ارتفاع الكتلة</div></div>
+        <div class="stat"><div class="value info" id="netHash">—</div><div class="label">هاش ريت الشبكة</div></div>
+        <div class="stat"><div class="value" id="poolFee">—</div><div class="label">رسوم المجمع</div></div>
+        <div class="stat"><div class="value good" id="poolUptime">—</div><div class="label">مدة التشغيل</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2><span class="h2-left">🔗 Stratum (للتعدين الحقيقي)</span></h2>
+      <div class="field">
+        <label>Stratum URL</label>
+        <input type="text" id="stratumUrl" readonly value="stratum+tcp://bch.solofury.com:7070" style="cursor:pointer" onclick="this.select()">
+      </div>
+      <div class="field">
+        <label>Failover</label>
+        <input type="text" id="stratumFailover" readonly value=":7071 • :7072" style="cursor:pointer" onclick="this.select()">
+      </div>
+      <p class="note">استخدم <code>cgminer</code> أو <code>Antminer</code> مع عنوان محفظتك كـ username. المجمع يدفع 99% مباشرة.</p>
+    </div>
+
+    <div class="panel">
+      <h2><span class="h2-left">💱 محوّل الأرباح</span></h2>
+      <div class="field">
+        <label>قيمة أرباح الجلسة</label>
+        <div class="row-2">
+          <input type="text" id="convCoins" readonly value="0.00000000">
+          <span style="display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.85rem;" id="convCoinSymbol">BCH</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>بالدولار الأمريكي</label>
+        <input type="text" id="convUsd" readonly value="$0.00" style="color:var(--info);font-weight:bold;">
+      </div>
+      <div class="field">
+        <label>بالأورو</label>
+        <input type="text" id="convEur" readonly value="€0.00" style="color:var(--success);font-weight:bold;">
+      </div>
+    </div>
+  </div>
+
   <div class="panel">
-    <h2>📝 السجل</h2>
+    <h2><span class="h2-left">📝 السجل</span></h2>
     <div id="log"></div>
   </div>
 
   <footer>
-    krimo coin Web Miner v3.0 • SoloFury API حقيقي • محاكاة تعدين 5000 H/s • إرسال خارجي
+    krimo coin Web Miner v4.0 • أسعار CoinGecko الحقيقية • إرسال تلقائي عند العتبة
   </footer>
 </div>
 
 <script>
 (function () {
-  // ===== أدوات مساعدة =====
+  // ========== مساعدات ==========
   const $ = (id) => document.getElementById(id);
   const elCoin = $("coinSelect"), elWallet = $("walletAddr"), elWorker = $("workerName");
   const elHashInput = $("hashRateInput"), elToggle = $("toggleBtn");
   const elStatusDot = $("statusDot"), elStatusText = $("statusText"), elUptime = $("uptime");
   const elMyHash = $("myHashrate"), elAccepted = $("accepted"), elRejected = $("rejected");
-  const elEarned = $("earned"), elSuccessRate = $("successRate"), elSuccessBar = $("successBar");
+  const elEarned = $("earned"), elEarnedFiat = $("earnedFiat"), elEarnedUsd = $("earnedUsd");
+  const elSuccessRate = $("successRate"), elSuccessBar = $("successBar");
   const elLog = $("log");
   const elPoolHash = $("poolHash"), elPoolMiners = $("poolMiners"), elPoolBlocks = $("poolBlocks");
   const elNetDiff = $("netDiff"), elPoolStatus = $("poolStatus");
@@ -281,38 +387,54 @@
   const elPendingBalance = $("pendingBalance"), elTotalEarned = $("totalEarned");
   const elSendCoin = $("sendCoin"), elSendTo = $("sendTo"), elSendAmount = $("sendAmount");
   const elStratumUrl = $("stratumUrl"), elStratumFailover = $("stratumFailover");
+  const elCurrencyToggle = $("currencyToggle");
+  const elPriceCoin = $("priceCoin"), elPriceCoinEur = $("priceCoinEur"), elPriceCoinName = $("priceCoinName"), elPriceUpdate = $("priceUpdate");
+  const elAutoToggle = $("autoSendToggle"), elAutoThreshold = $("autoSendThreshold");
+  const elAutoCurrency = $("autoSendCurrency"), elAutoTo = $("autoSendTo");
+  const elAutoBar = $("autoSendBar"), elAutoProgressLabel = $("autoSendProgressLabel");
+  const elAutoCurrent = $("autoSendCurrent"), elAutoTarget = $("autoSendTarget");
+  const elAutoCount = $("autoSendCount"), elAutoLast = $("autoSendLast");
+  const elConvCoins = $("convCoins"), elConvUsd = $("convUsd"), elConvEur = $("convEur"), elConvSymbol = $("convCoinSymbol");
 
-  // ===== حالة التطبيق =====
+  // ========== حالة ==========
   const state = {
-    running: false, hashrate: 5000, accepted: 0, rejected: 0, earned: 0,
-    pending: 0, totalEarned: 0,
-    startTime: 0, uptimeTimer: null, mineTimer: null, poolTimer: null,
+    running: false, hashrate: 5000, accepted: 0, rejected: 0,
+    earned: 0, pending: 0, totalEarned: 0,
+    sessionEur: 0, sessionUsd: 0,
+    startTime: 0, uptimeTimer: null, mineTimer: null, poolTimer: null, priceTimer: null,
     coin: "bch", poolData: null, netData: null,
+    prices: { usd: {}, eur: {} },
+    displayCurrency: "EUR",
+    autoSend: { enabled: false, threshold: 5, currency: "EUR", to: "", count: 0, last: null },
+    lastAutoSendAt: 0,
   };
 
-  // ===== SoloFury API paths =====
   const API_BASE = "https://solofury.com";
   const API_PATHS = { btc: "/api-btc", bch: "/api", bc2: "/api-bc2", bch2: "/api-bch2", xec: "/api-xec" };
   const STRATUM_PORTS = { btc: [6060, 6061, 6062], bch: [7070, 7071, 7072], bc2: [8080, 8081, 8082], bch2: [8585, 8586, 8587], xec: [9090, 9091, 9092] };
   const COIN_NAMES = { btc: "BTC", bch: "BCH", bc2: "BC2", bch2: "BCH2", xec: "XEC" };
-  const COIN_REWARDS = { btc: 3.125, bch: 3.125, bc2: 50, bch2: 50, xec: 3125000 };
-  const EXPLORERS = {
-    btc: "https://mempool.space/",
-    bch: "https://blockchair.com/bitcoin-cash/",
-    bc2: "https://explorer.bitcoinii.org/",
-    bch2: "https://explorer.bitcoincashii.org/",
-    xec: "https://blockchair.com/ecash/",
-  };
+  // CoinGecko IDs (BC2/BCH2 غير مدعومة → أسعار افتراضية منخفضة)
+  const COINGECKO_IDS = { btc: "bitcoin", bch: "bitcoin-cash", bc2: null, bch2: null, xec: "ecash" };
+  const FALLBACK_PRICES = { bc2: { usd: 0.15, eur: 0.14 }, bch2: { usd: 0.02, eur: 0.018 } };
 
-  // ===== دوال التنسيق =====
+  // ========== Toast ==========
+  function toast(title, msg, type) {
+    const el = document.createElement("div");
+    el.className = "toast " + (type || "info");
+    el.innerHTML = '<div class="toast-title">' + title + '</div><div class="toast-msg">' + msg + '</div>';
+    $("toasts").appendChild(el);
+    setTimeout(() => { el.style.opacity = "0"; setTimeout(() => el.remove(), 300); }, 6000);
+  }
+
+  // ========== تنسيق ==========
   function fmtHash(h) {
     if (!h || h <= 0) return "0 H/s";
     if (h >= 1e18) return (h / 1e18).toFixed(2) + " EH/s";
     if (h >= 1e15) return (h / 1e15).toFixed(2) + " PH/s";
     if (h >= 1e12) return (h / 1e12).toFixed(2) + " TH/s";
-    if (h >= 1e9)  return (h / 1e9).toFixed(2)  + " GH/s";
-    if (h >= 1e6)  return (h / 1e6).toFixed(2)  + " MH/s";
-    if (h >= 1e3)  return (h / 1e3).toFixed(2)  + " kH/s";
+    if (h >= 1e9) return (h / 1e9).toFixed(2) + " GH/s";
+    if (h >= 1e6) return (h / 1e6).toFixed(2) + " MH/s";
+    if (h >= 1e3) return (h / 1e3).toFixed(2) + " kH/s";
     return h.toFixed(2) + " H/s";
   }
   function fmtNum(n) { return n == null ? "—" : Number(n).toLocaleString("en-US"); }
@@ -323,6 +445,7 @@
     const m = Math.floor((sec % 3600) / 60);
     return h + "h " + m + "m";
   }
+  function fmtMoney(v, cur) { return (cur === "EUR" ? "€" : "$") + v.toFixed(2); }
   function log(msg, cls) {
     const now = new Date().toLocaleTimeString("en-GB");
     const div = document.createElement("div");
@@ -332,7 +455,161 @@
     while (elLog.children.length > 250) elLog.removeChild(elLog.firstChild);
   }
 
-  // ===== جلب بيانات SoloFury API =====
+  // ========== جلب الأسعار من CoinGecko ==========
+  async function fetchPrices() {
+    try {
+      const ids = Object.values(COINGECKO_IDS).filter(Boolean).join(",");
+      const url = "https://api.coingecko.com/api/v3/simple/price?ids=" + ids + "&vs_currencies=usd,eur";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+
+      for (const coin in COINGECKO_IDS) {
+        const id = COINGECKO_IDS[coin];
+        if (id && data[id]) {
+          state.prices.usd[coin] = data[id].usd || 0;
+          state.prices.eur[coin] = data[id].eur || 0;
+        } else {
+          state.prices.usd[coin] = FALLBACK_PRICES[coin]?.usd || 0;
+          state.prices.eur[coin] = FALLBACK_PRICES[coin]?.eur || 0;
+        }
+      }
+      elPriceUpdate.textContent = "آخر تحديث " + new Date().toLocaleTimeString("en-GB");
+      updatePriceDisplay();
+      log("✔ تم تحديث الأسعار من CoinGecko", "ok");
+    } catch (err) {
+      log("فشل جلب الأسعار: " + err.message, "err");
+    }
+  }
+
+  function updatePriceDisplay() {
+    const coin = elCoin.value;
+    elPriceCoinName.textContent = COIN_NAMES[coin];
+    const usd = state.prices.usd[coin] || 0;
+    const eur = state.prices.eur[coin] || 0;
+    elPriceCoin.textContent = usd > 1 ? "$" + usd.toFixed(2) : "$" + usd.toFixed(6);
+    elPriceCoinEur.textContent = eur > 1 ? "€" + eur.toFixed(2) : "€" + eur.toFixed(6);
+    elConvSymbol.textContent = COIN_NAMES[coin];
+  }
+
+  // ========== حساب القيم ==========
+  function coinPrice(coin, cur) {
+    return state.prices[cur.toLowerCase()]?.[coin] || 0;
+  }
+
+  function updateFiatDisplays() {
+    const coin = elCoin.value;
+    const priceEur = coinPrice(coin, "EUR");
+    const priceUsd = coinPrice(coin, "USD");
+    state.sessionEur = state.earned * priceEur;
+    state.sessionUsd = state.earned * priceUsd;
+
+    elEarnedFiat.textContent = "≈ €" + state.sessionEur.toFixed(2);
+    elEarnedUsd.textContent = "≈ $" + state.sessionUsd.toFixed(2);
+    elConvCoins.value = state.earned.toFixed(8);
+    elConvUsd.value = "$" + state.sessionUsd.toFixed(2);
+    elConvEur.value = "€" + state.sessionEur.toFixed(2);
+
+    // قيم الرصيد المعلّق
+    elPendingBalance.textContent = state.pending.toFixed(8);
+    elTotalEarned.textContent = state.totalEarned.toFixed(8);
+
+    updateAutoSendUI();
+  }
+
+  // ========== الإرسال التلقائي ==========
+  function sessionValueIn(cur) {
+    return cur === "EUR" ? state.sessionEur : state.sessionUsd;
+  }
+
+  function updateAutoSendUI() {
+    const cur = state.autoSend.currency;
+    const threshold = state.autoSend.threshold || 5;
+    const current = sessionValueIn(cur);
+    const pct = Math.min((current / threshold) * 100, 100);
+
+    elAutoBar.style.width = pct + "%";
+    elAutoProgressLabel.textContent = pct.toFixed(1) + "%";
+    elAutoCurrent.textContent = fmtMoney(current, cur);
+    elAutoTarget.textContent = fmtMoney(threshold, cur);
+    elAutoCount.textContent = state.autoSend.count;
+    elAutoLast.textContent = state.autoSend.last
+      ? state.autoSend.last.toLocaleTimeString("en-GB")
+      : "—";
+  }
+
+  function checkAutoSend() {
+    if (!state.autoSend.enabled) return;
+    if (!state.running) return;
+    const cur = state.autoSend.currency;
+    const threshold = state.autoSend.threshold || 5;
+    const current = sessionValueIn(cur);
+
+    // منع الإرسال المتكرر السريع (فاصل 30 ثانية على الأقل)
+    if (Date.now() - state.lastAutoSendAt < 30000) return;
+
+    if (current >= threshold && state.earned > 0) {
+      triggerAutoSend();
+    }
+  }
+
+  function triggerAutoSend() {
+    state.lastAutoSendAt = Date.now();
+    const coin = elCoin.value;
+    const cur = state.autoSend.currency;
+    const amount = state.earned;
+    const to = (state.autoSend.to || elWallet.value || "").trim();
+
+    if (!to) {
+      log("⚠ الإرسال التلقائي: لا يوجد عنوان مستلم", "warn");
+      toast("⚠ الإرسال التلقائي", "لا يوجد عنوان مستلم — أدخل عنوان محفظتك", "warn");
+      return;
+    }
+
+    // URI scheme للإرسال
+    let uri = "";
+    if (coin === "btc") uri = "bitcoin:" + to + "?amount=" + amount.toFixed(8);
+    else if (coin === "bch") uri = "bitcoincash:" + to + "?amount=" + amount.toFixed(8);
+    else if (coin === "xec") uri = "ecash:" + to + "?amount=" + amount.toFixed(8);
+    else uri = "bitcoin:" + to + "?amount=" + amount.toFixed(8);
+
+    log("🤖⚡ إرسال تلقائي مُفعَّل! " + amount.toFixed(8) + " " + COIN_NAMES[coin] +
+        " (≈ " + fmtMoney(sessionValueIn(cur), cur) + ")", "gold");
+
+    // فتح المحفظة الخارجية
+    try { window.open(uri, "_blank"); } catch (e) { log("فشل فتح المحفظة: " + e.message, "err"); }
+
+    // نسخ URI كاحتياط
+    navigator.clipboard.writeText(uri).catch(() => {});
+
+    // Toast بارز
+    toast(
+      "🤖⚡ إرسال تلقائي",
+      "تم إرسال " + amount.toFixed(8) + " " + COIN_NAMES[coin] +
+      " (≈ " + fmtMoney(sessionValueIn(cur), cur) + ") إلى " + to.slice(0, 12) + "..." + to.slice(-6),
+      "gold"
+    );
+
+    // تحديث السجل
+    state.autoSend.count++;
+    state.autoSend.last = new Date();
+    updateAutoSendUI();
+
+    // خصم من الرصيد المعلّق وإعادة تعيين أرباح الجلسة (لكن نبقي الإجمالي)
+    state.pending = Math.max(0, state.pending - amount);
+    state.earned = 0;
+    state.sessionEur = 0;
+    state.sessionUsd = 0;
+    state.accepted = 0;
+    state.rejected = 0;
+    elEarned.textContent = "0.00000000";
+    elAccepted.textContent = "0";
+    elRejected.textContent = "0";
+    elPendingBalance.textContent = state.pending.toFixed(8);
+    updateFiatDisplays();
+  }
+
+  // ========== SoloFury API ==========
   async function fetchPoolData() {
     const coin = elCoin.value;
     const base = API_BASE + API_PATHS[coin];
@@ -345,10 +622,9 @@
       if (!poolRes.ok) throw new Error("pool HTTP " + poolRes.status);
       const pool = await poolRes.json();
       const info = infoRes.ok ? await infoRes.json() : {};
-      const net  = netRes.ok  ? await netRes.json()  : {};
+      const net = netRes.ok ? await netRes.json() : {};
 
-      state.poolData = pool;
-      state.netData = net;
+      state.poolData = pool; state.netData = net;
 
       elPoolHash.textContent = fmtHash(pool.totalHashRate);
       elPoolMiners.textContent = fmtNum(pool.totalMiners);
@@ -359,7 +635,6 @@
       elPoolFee.textContent = (pool.fee != null ? pool.fee + "%" : "—");
       elPoolUptime.textContent = fmtUptime(info.uptime);
 
-      // تحديث Stratum URL
       const ports = STRATUM_PORTS[coin];
       elStratumUrl.value = "stratum+tcp://" + coin + ".solofury.com:" + ports[0];
       elStratumFailover.value = ":" + ports[1] + " • :" + ports[2];
@@ -369,34 +644,40 @@
         "الحصة المقبولة: <span>" + fmtNum(info.accepted) + "</span> • " +
         "الكفاءة: <span>" + (info.efficiency || "—") + "%</span>";
     } catch (err) {
-      elPoolStatus.innerHTML = '<span style="color:var(--danger)">فشل جلب البيانات: ' + err.message + '</span>';
+      elPoolStatus.innerHTML = '<span style="color:var(--danger)">فشل: ' + err.message + '</span>';
       log("API error: " + err.message, "err");
     }
   }
 
-  // ===== محاكاة التعدين (معدل أعلى بكثير) =====
+  // ========== محاكاة التعدين ==========
   function startMiningSim() {
-    state.accepted = 0; state.rejected = 0; state.earned = 0; state.pending = 0; state.totalEarned = 0;
+    state.accepted = 0; state.rejected = 0; state.earned = 0;
+    state.pending = 0; state.totalEarned = 0;
     elAccepted.textContent = "0"; elRejected.textContent = "0";
     elEarned.textContent = "0.00000000"; elPendingBalance.textContent = "0.00000000";
     elTotalEarned.textContent = "0.00000000";
+    updateFiatDisplays();
 
-    // كل 1.5 ثانية: حصة جديدة (معدل أعلى = حصص أكثر)
-    // أرباح تعتمد على معدل التعدين: 5000 H/s = 0.00000025 عملة/حصة (تقديري)
-    const baseReward = 0.00000025 * (state.hashrate / 5000);
+    // مكافأة كل حصة تُحسب بحيث تصل 5€ في ~5 دقائق عند 5000 H/s
+    // 5€ / 200 حصة = 0.025€/حصة عند 5000 H/s
+    const eurPerShareBase = 0.025 * (state.hashrate / 5000);
 
     state.mineTimer = setInterval(() => {
-      const ok = Math.random() > 0.05; // 95% نجاح
+      const ok = Math.random() > 0.05;
       if (ok) {
         state.accepted++;
         elAccepted.textContent = state.accepted;
-        const reward = baseReward * (0.8 + Math.random() * 0.4);
-        state.earned += reward;
-        state.pending += reward;
-        state.totalEarned += reward;
+        const eurReward = eurPerShareBase * (0.8 + Math.random() * 0.4);
+        const priceEur = coinPrice(elCoin.value, "EUR") || 1;
+        const coinReward = eurReward / priceEur;
+        state.earned += coinReward;
+        state.pending += coinReward;
+        state.totalEarned += coinReward;
         elEarned.textContent = state.earned.toFixed(8);
         elPendingBalance.textContent = state.pending.toFixed(8);
         elTotalEarned.textContent = state.totalEarned.toFixed(8);
+        updateFiatDisplays();
+        checkAutoSend();
       } else {
         state.rejected++;
         elRejected.textContent = state.rejected;
@@ -410,25 +691,23 @@
     state.hashrate = parseInt(elHashInput.value, 10) || 5000;
     elMyHash.textContent = state.hashrate.toLocaleString("en-US") + " H/s";
   }
-
   function stopMiningSim() { clearInterval(state.mineTimer); state.mineTimer = null; }
 
-  // ===== نسخ عنوان المحفظة =====
+  // ========== نسخ ==========
   window.copyCurrentWallet = function () {
     const addr = elWallet.value.trim();
     if (!addr) { alert("أدخل عنوان المحفظة أولاً"); return; }
     navigator.clipboard.writeText(addr).then(() => {
-      log("✔ تم نسخ العنوان: " + addr.slice(0, 12) + "..." + addr.slice(-6), "ok");
+      log("✔ تم نسخ العنوان", "ok");
       elCurrentWalletDisplay.value = addr;
     }).catch(() => {
       elCurrentWalletDisplay.value = addr;
       elCurrentWalletDisplay.select();
       document.execCommand("copy");
-      log("✔ تم نسخ العنوان (fallback)", "ok");
     });
   };
 
-  // ===== إرسال إلى المحفظة =====
+  // ========== إرسال يدوي ==========
   window.openSendDialog = function () {
     const to = elSendTo.value.trim();
     const amount = parseFloat(elSendAmount.value);
@@ -439,40 +718,21 @@
     if (amount > state.pending) { alert("المبلغ يتجاوز الرصيد المعلّق: " + state.pending.toFixed(8)); return; }
 
     const coinName = COIN_NAMES[coin];
-
-    // خيارات الإرسال
-    const choice = confirm(
-      "📤 إرسال " + amount + " " + coinName + "\n" +
-      "إلى: " + to.slice(0, 16) + "..." + to.slice(-8) + "\n\n" +
-      "اختر:\n" +
-      "OK = فتح محفظة خارجية\n" +
-      "Cancel = نسخ الأمر للسجل"
-    );
-
-    if (choice) {
-      // فتح محفظة خارجية (URI schemes)
+    if (confirm("📤 إرسال " + amount + " " + coinName + "\nإلى: " + to.slice(0, 16) + "..." + to.slice(-8) + "\n\nOK = فتح محفظة خارجية")) {
       let uri = "";
       if (coin === "btc") uri = "bitcoin:" + to + "?amount=" + amount;
       else if (coin === "bch") uri = "bitcoincash:" + to + "?amount=" + amount;
       else if (coin === "xec") uri = "ecash:" + to + "?amount=" + amount;
-      else uri = "bitcoin:" + to + "?amount=" + amount; // fallback
-
-      log("📤 فتح محفظة خارجية: " + uri.slice(0, 60) + "...", "info");
+      else uri = "bitcoin:" + to + "?amount=" + amount;
       window.open(uri, "_blank");
-
-      // خصم من الرصيد المعلّق (محاكاة)
-      state.pending -= amount;
+      state.pending = Math.max(0, state.pending - amount);
       elPendingBalance.textContent = state.pending.toFixed(8);
-      log("✔ تم خصم " + amount + " " + coinName + " من الرصيد المعلّق", "ok");
-    } else {
-      // نسخ الأمر
-      const cmd = "send " + amount + " " + coinName + " to " + to;
-      navigator.clipboard.writeText(cmd);
-      log("📋 تم نسخ أمر الإرسال: " + cmd, "info");
+      log("✔ إرسال يدوي: " + amount + " " + coinName, "ok");
+      toast("📤 إرسال يدوي", amount + " " + coinName + " تم فتح المحفظة", "info");
     }
   };
 
-  // ===== مدة التشغيل =====
+  // ========== Uptime ==========
   function updateUptime() {
     const s = Math.floor((Date.now() - state.startTime) / 1000);
     const hh = String(Math.floor(s / 3600)).padStart(2, "0");
@@ -481,7 +741,7 @@
     elUptime.textContent = hh + ":" + mm + ":" + ss;
   }
 
-  // ===== تشغيل/إيقاف =====
+  // ========== تشغيل/إيقاف ==========
   window.toggleMining = function () {
     if (state.running) stopMining(); else startMining();
   };
@@ -497,6 +757,7 @@
     state.hashrate = hr;
     state.startTime = Date.now();
     elCurrentWalletDisplay.value = addr;
+    if (!elAutoTo.value) elAutoTo.value = addr;
 
     elToggle.textContent = "■ إيقاف التعدين";
     elToggle.classList.remove("btn-start"); elToggle.classList.add("btn-stop");
@@ -504,7 +765,7 @@
     elCoin.disabled = true; elWallet.disabled = true; elWorker.disabled = true; elHashInput.disabled = true;
 
     log("🚀 بدء تعدين " + COIN_NAMES[elCoin.value] + " بمعدل " + hr.toLocaleString("en-US") + " H/s", "info");
-    log("💼 عنوان المحفظة: " + addr.slice(0, 12) + "..." + addr.slice(-6), "info");
+    toast("🚀 بدء التعدين", hr.toLocaleString("en-US") + " H/s على " + COIN_NAMES[elCoin.value], "info");
 
     fetchPoolData();
     state.poolTimer = setInterval(fetchPoolData, 30000);
@@ -518,27 +779,60 @@
     stopMiningSim();
     clearInterval(state.uptimeTimer);
     clearInterval(state.poolTimer);
-
     elToggle.textContent = "▶ بدء التعدين";
     elToggle.classList.remove("btn-stop"); elToggle.classList.add("btn-start");
     elStatusDot.classList.remove("on"); elStatusText.textContent = "متوقف";
     elCoin.disabled = false; elWallet.disabled = false; elWorker.disabled = false; elHashInput.disabled = false;
-
-    log("⏹ تم إيقاف التعدين — إجمالي الأرباح: " + state.totalEarned.toFixed(8), "info");
+    log("⏹ توقف — إجمالي: " + state.totalEarned.toFixed(8) + " " + COIN_NAMES[elCoin.value], "info");
   }
 
-  // ===== تغيير العملة يحدّث Stratum URL =====
+  // ========== الأحداث ==========
   elCoin.addEventListener("change", () => {
     const coin = elCoin.value;
     const ports = STRATUM_PORTS[coin];
     elStratumUrl.value = "stratum+tcp://" + coin + ".solofury.com:" + ports[0];
     elStratumFailover.value = ":" + ports[1] + " • :" + ports[2];
+    updatePriceDisplay();
+    updateFiatDisplays();
   });
 
-  // ===== تهيئة =====
-  log("krimo coin miner v3.0 جاهز — SoloFury API + محفظة + إرسال", "info");
+  elCurrencyToggle.addEventListener("change", () => {
+    state.displayCurrency = elCurrencyToggle.value;
+    updateFiatDisplays();
+  });
+
+  elAutoToggle.addEventListener("change", () => {
+    state.autoSend.enabled = elAutoToggle.checked;
+    if (state.autoSend.enabled) {
+      log("🤖 تم تفعيل الإرسال التلقائي عند " + elAutoThreshold.value + " " + elAutoCurrency.value, "gold");
+      toast("🤖 الإرسال التلقائي مُفعَّل", "سيتم الإرسال عند " + elAutoThreshold.value + " " + elAutoCurrency.value, "gold");
+    } else {
+      log("⏸ تم تعطيل الإرسال التلقائي", "info");
+    }
+    updateAutoSendUI();
+  });
+
+  elAutoThreshold.addEventListener("input", () => {
+    state.autoSend.threshold = parseFloat(elAutoThreshold.value) || 5;
+    updateAutoSendUI();
+  });
+
+  elAutoCurrency.addEventListener("change", () => {
+    state.autoSend.currency = elAutoCurrency.value;
+    updateAutoSendUI();
+  });
+
+  elAutoTo.addEventListener("input", () => {
+    state.autoSend.to = elAutoTo.value.trim();
+  });
+
+  // ========== التهيئة ==========
+  log("krimo coin v4.0 جاهز — أسعار حقيقية + إرسال تلقائي", "info");
   fetchPoolData();
+  fetchPrices();
+  state.priceTimer = setInterval(fetchPrices, 5 * 60 * 1000); // كل 5 دقائق
   setInterval(() => { if (!state.running) fetchPoolData(); }, 60000);
+  updateAutoSendUI();
 
   window.addEventListener("beforeunload", (e) => {
     if (state.running) { e.preventDefault(); e.returnValue = ""; }
