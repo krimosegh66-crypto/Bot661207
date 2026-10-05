@@ -1,0 +1,10 @@
+// بدلًا من:
+// window.open("bitcoincash:" + to + "?amount=" + amount, "_blank");
+
+// يمكن استخدام:
+if (destination === "paypal") {
+  // فتح PayPal مع المبلغ (بعد تحويل العملة إلى دولار)
+  const usdAmount = state.sessionUsd;
+  const paypalUrl = "https://www.paypal.com/paypalme/YOUR_USERNAME/" + usdAmount.toFixed(2);
+  window.open(paypalUrl, "_blank");
+}
